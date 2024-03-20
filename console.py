@@ -128,10 +128,49 @@ class HBNBCommand(cmd.Cmd):
                 kw[arg_splited[0]] = arg_splited[1]
         except SyntaxError:
             print("** class name missing **")
+<<<<<<< HEAD
         except NameError:
             print("** class doesn't exist **")
         new_instance = HBNBCommand.classes[arg_list[0]](**kw)
         new_instance.save()
+=======
+            return
+
+        args_list = args.split()
+        class_name = args_list[0]
+
+        if class_name not in HBNBCommand.classes:
+            print("** class doesn't exists **")
+            return
+
+        args_list = args_list[1:]
+
+        kwargs = {}
+
+        for arg in args_list:
+            key_value = arg.split('=')
+            if len(key_value) != 2:
+                continue
+
+            key, value = key_value
+
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1].replace('_', ' ')
+                value = value.replace('\\"', '"')
+
+            try:
+                if '.' in value:
+                    value = float(value)
+                else:
+                    value = int(value)
+            except ValueError:
+                continue
+
+            kwargs[key] = value
+
+        new_instance = HBNBCommand.classes[class_name](**kwargs)
+        storage.save()
+>>>>>>> 527fb473d29d2a8f21b7890787807dbac048d5e9
         print(new_instance.id)
 
     def help_create(self):
@@ -325,6 +364,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
