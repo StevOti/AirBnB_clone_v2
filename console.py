@@ -128,12 +128,10 @@ class HBNBCommand(cmd.Cmd):
                 kw[arg_splited[0]] = arg_splited[1]
         except SyntaxError:
             print("** class name missing **")
-<<<<<<< HEAD
         except NameError:
             print("** class doesn't exist **")
-        new_instance = HBNBCommand.classes[arg_list[0]](**kw)
-        new_instance.save()
-=======
+            new_instance = HBNBCommand.classes[arg_list[0]](**kw)
+            new_instance.save()
             return
 
         args_list = args.split()
@@ -170,7 +168,6 @@ class HBNBCommand(cmd.Cmd):
 
         new_instance = HBNBCommand.classes[class_name](**kwargs)
         storage.save()
->>>>>>> 527fb473d29d2a8f21b7890787807dbac048d5e9
         print(new_instance.id)
 
     def help_create(self):
