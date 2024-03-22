@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#! /usr/bin/python3
 """This is the file storage class for AirBnB"""
 import json
 from models.base_model import BaseModel
@@ -26,7 +26,7 @@ class FileStorage:
         Return:
             returns a dictionary of __object
         """
-        dic = {}
+        """dic = {}
         if cls:
             dictionary = self.__objects
             for key in dictionary:
@@ -35,6 +35,11 @@ class FileStorage:
                 if (partition[0] == cls.__name__):
                     dic[key] = self.__objects[key]
             return (dic)
+        else:
+            return self.__objects"""
+        if cls:
+            return {k: v for k, v in self.__objects.items()
+                    if instances(v, cls)}
         else:
             return self.__objects
 
@@ -72,7 +77,8 @@ class FileStorage:
         """
         if obj:
             key = "{}.{}".format(type(obj).__name__, obj.id)
-            del self.__objects[key]
+            if key in self.__objects:
+                del self.__objects[key]
 
     def close(self):
         """ calls reload()
