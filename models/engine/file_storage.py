@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#! /usr/bin/python3
 """This is the file storage class for AirBnB"""
 import json
 from models.base_model import BaseModel
@@ -26,53 +26,50 @@ class FileStorage:
         Return:
             returns a dictionary of __object
         """
-        dic = {}
-        if cls:
-            dictionary = self.__objects
-            for key in dictionary:
-                partition = key.replace('.', ' ')
-                partition = shlex.split(partition)
-                if (partition[0] == cls.__name__):
-                    dic[key] = self.__objects[key]
-            return (dic)
+        if cls is None:
+            return FileStorage.__objects
         else:
-            return self.__objects
+            return {k: v for v in FileStorage.__objects.items()
+                    if isinstance(v, cls)}
 
     def new(self, obj):
-        """sets __object to given obj
+        """Adds new object to dictionary
         Args:
             obj: given object
         """
-        if obj:
-            key = "{}.{}".format(type(obj).__name__, obj.id)
-            self.__objects[key] = obj
+        key = '{}.{}'.format(obj.__class__.__name__, obj.id)
+        FileStorage.__objects[key] = obj
 
     def save(self):
-        """serialize the file path to JSON file path
+        """saves dictionary to file
         """
-        my_dict = {}
-        for key, value in self.__objects.items():
-            my_dict[key] = value.to_dict()
-        with open(self.__file_path, 'w', encoding="UTF-8") as f:
-            json.dump(my_dict, f)
+        with open(FileStorage.__file_path, 'w') as f:
+            temp = {k: v.to_dict() for k, v in FileStorage.__objects.item()}
+            json.dump(temp, f)
 
     def reload(self):
         """serialize the file path to JSON file path
         """
+        classes = {
+            'BaseModel': BaseModel, 'User': User, 'Place': Place,
+            'State': State, 'City': City, 'Amenity': Amenity,
+            'Review': Review
+        }
         try:
-            with open(self.__file_path, 'r', encoding="UTF-8") as f:
-                for key, value in (json.load(f)).items():
-                    value = eval(value["__class__"])(**value)
-                    self.__objects[key] = value
+            with open(FileStorage.__file_path, 'r', encoding="UTF-8") as f:
+                temp = json.load(f)
+                for key, value in temp.items():
+                    self.new(classes[value['__class__']](**value))
         except FileNotFoundError:
-            pass
+            print(f"Error reloading file: {e}")
 
     def delete(self, obj=None):
         """ delete an existing element
         """
         if obj:
             key = "{}.{}".format(type(obj).__name__, obj.id)
-            del self.__objects[key]
+            if key in self.__objects:
+                del self.__objects[key]
 
     def close(self):
         """ calls reload()

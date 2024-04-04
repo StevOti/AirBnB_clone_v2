@@ -5,18 +5,24 @@ import uuid
 import models
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime
 
+time = "%Y-%m-%dT%H:%M:%S.%f"
 
-Base = declarative_base()
+if models.storage_t == "db":
+    Base = declarative_base()
+else:
+    Base = object
 
 
 class BaseModel:
     """This class will defines all common attributes/methods
     for other classes
     """
-    id = Column(String(60), unique=True, nullable=False, primary_key=True)
-    created_at = Column(DateTime, nullable=False, default=(datetime.utcnow()))
-    updated_at = Column(DateTime, nullable=False, default=(datetime.utcnow()))
+    if models.storage_t == "db":
+        id = Column(String(60), primary_key=True)
+        created_at = Column(DateTime, default=(datetime.now()))
+        updated_at = Column(DateTime, default=(datetime.now()))
 
     def __init__(self, *args, **kwargs):
         """Instantiation of base model class
@@ -30,16 +36,18 @@ class BaseModel:
         """
         if kwargs:
             for key, value in kwargs.items():
-                if key == "created_at" or key == "updated_at":
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-                if key != "__class__":
+                if != "__class__":
                     setattr(self, key, value)
-            if "id" not in kwargs:
-                self.id = str(uuid.uuid4())
-            if "created_at" not in kwargs:
-                self.created_at = datetime.now()
-            if "updated_at" not in kwargs:
+            if kwargs.get("created_at", None) and type(self.created_at) is str:
+                self.created_at = datetime.strptime(kwargs["created_at"], time)
+            else:
                 self.updated_at = datetime.now()
+            if kwargs.get("updated_at", None) and type(self.updated_at) is str:
+                self.updated_at = datetime.strptime(kwargs["updated_at"], time)
+            else:
+                self.updated_at = datetime.now()
+            if kwargs.get("id", None) is None:
+                self.id = str(uuid.uuid4())
         else:
             self.id = str(uuid.uuid4())
             self.created_at = self.updated_at = datetime.now()
@@ -69,11 +77,13 @@ class BaseModel:
         Return:
             returns a dictionary of all the key values in __dict__
         """
-        my_dict = dict(self.__dict__)
-        my_dict["__class__"] = str(type(self).__name__)
-        my_dict["created_at"] = self.created_at.isoformat()
-        my_dict["updated_at"] = self.updated_at.isoformat()
-        if '_sa_instance_state' in my_dict.keys():
+        my_dict = self.__dict__.copy()
+        if "created_at" in my_dict:
+            my_dict["created_at"] = my_dict["created_at"].strftime(time)
+        if "updated_at" in my_dict:
+            my_dict["updated_at"] = my_dict["updated_at"].strftime(time)
+        my_dict["__class__"] = self.__class__.__name__
+        if '_sa_instance_state' in my_dict
             del my_dict['_sa_instance_state']
         return my_dict
 
